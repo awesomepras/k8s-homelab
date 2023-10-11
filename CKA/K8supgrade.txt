@@ -1,0 +1,90 @@
+
+K8S install:
+
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl
+
+Download google gpg key
+mkdir -p /etc/apt/keyrings/
+curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg
+Add kubneretes repo:
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+Install tools
+sudo apt-get update
+sudo apt-get install -y kubelet=1.27.0-00 kubeadm=1.27.0-00 kubectl=1.27.0-00 ( cannot install kubectl in workernode)
+sudo apt-mark hold kubelet kubeadm kubectl
+
+
+
+====FOR UPGRADE ++++
+sudo apt update
+sudo apt-cache madison kubeadm | tac
++ Also you can run a kubeadm upgrde plan to get upgrade suggestions.
+
+sudo kubeadm upgrade plan
+
++ Drain the Node to evict all workloads.
+kubectl drain master-node --ignore-daemonsets
+
+sudo apt-mark unhold kubeadm && \
+sudo apt-get update && sudo apt-get install -y kubeadm=1.24.6-00 && \
+sudo apt-mark hold kubeadm
++ verify:
+kubeadm version 
+
++Upgrade Kubelet and Kubectl.
+sudo apt-mark unhold kubelet kubectl && \
+sudo apt-get update && sudo apt-get install -y kubelet=1.24.6-00 kubectl=1.24.6-00 && \
+sudo apt-mark hold kubelet kubectl
++Restart the services
+
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+
+Upgrade kubernetes on controlplane node:
+
+ kubeadm upgrade apply v1.27.0
+ 
+ 
++ Uncordon the Node and Verify the Node Status
+
+kubectl uncordon master-node
+Verify the node status and version using the following command.
+===Upgrade Worker Nodes===
+
+kubectl get nodes
+
++ Drain worker node
+kubectl drain worker-node01 --ignore-daemonsets
+
+
+sudo apt-mark unhold kubeadm kubectl kubelet && \
+sudo apt-get update && sudo apt-get install -y kubeadm=1.24.6-00 && \
+sudo apt-mark hold kubeadm
++ Upgrade kubeadm
+sudo kubeadm upgrade node
+
++ Upgrade Kubelet & Kubectl
+sudo apt-mark unhold kubelet kubectl && \
+sudo apt-get update && sudo apt-get install -y kubelet=1.24.6-00 kubectl=1.24.6-00 && \
+sudo apt-mark hold kubelet kubectl
++ Restart kubelet
+
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+
+Verify:
+sudo apt-list --installed |grep kubelet 
+apt list  kubelet or apt list kubeadm 
+
++ Uncordon worker node
+kubectl uncordon worker-node01
++Verify
+kubectl get nodes
+
+
+HOW TO RESET:
+kubeadm reset
+
+kubectl delete controlplane  (master node)

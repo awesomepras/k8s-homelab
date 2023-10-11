@@ -1,0 +1,89 @@
+ETCD topology:
+- NO etcd 
+- Stacked 
+- External 
+
+
+Identify the etc process
+- is it running as a pod 
+- is it running only as a process 
+how :
+ps -ef |grep etcd 
+if process found -> external etcd => find the advertise URL -> do a host lookup -> will point to another location  ( also can be found by inspecting kube-api-server manifest under /etc/kubernetes/manifest)
+no process -> check get pods in all cluster -> if pod found -> stacked within the cluster (on top)
+
+
+Controlled By:  Node/cluster1-controlplane
+/etcd.advertise-client-urls: https://10.12.44.18:2379
+
+--cert-file=/etc/kubernetes/pki/etcd/server.crt
+--initial-advertise-peer-urls=https://10.12.44.18:2380
+      --initial-cluster=cluster1-controlplane=https://10.12.44.18:2380
+	   --key-file=/etc/kubernetes/pki/etcd/server.key
+	   --listen-client-urls=https://127.0.0.1:2379,https://10.12.44.18:2379
+	    --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+		  --data-dir=/var/lib/etcd
+  etcd-data:
+    Type:          HostPath (bare host directory volume)
+    Path:          /var/lib/etcd
+    HostPathType:  DirectoryOrCreate
+	
+	
+	Find out how many clusters are defined in .kube/config file 
+	switch context accordingly
+	k config use-context cluster1
+	
+	If you check out the pods running in the kube-system namespace in cluster1, you will notice that etcd is running as a pod:
+	
+	This means that ETCD is set up as a Stacked ETCD Topology where the distributed data storage cluster provided by etcd is stacked on top of the cluster formed by the nodes managed by kubeadm that run control plane components.
+	
+	external etcd:
+	if you inspect the kubeapi server yaml file you will notice  --etcd-servers=https://10.12.44.9:2379 
+ which is referring to  another location
+ 
+  host 10.12.44.9
+9.44.12.10.in-addr.arpa domain name pointer k8-multi-node-etcd-1-24-f7fc077c6c834b9b_etcd-server.1.uwffbw4fuadau75juafms1b8i.k8-multi-node-etcd-1-24-f7fc077c6c834b9b_kk-app
+
+>> to find out how many nodes :
+
+etcdctl \
+ --endpoints=https://127.0.0.1:2379 \
+ --cacert=/etc/etcd/pki/ca.pem \
+ --cert=/etc/etcd/pki/etcd.pem \
+ --key=/etc/etcd/pki/etcd-key.pem \
+  member list
+  
+  
+   kubectl describe  pods -n kube-system etcd-cluster1-controlplane  | grep advertise-client-urls
+    kubectl describe  pods -n kube-system etcd-cluster1-controlplane  | grep pki
+	
+	after obtaining required infor
+	ssh to cluster1-control plane and take snapshot, then copy it back to student node 
+   
+   scp /opt/cluster2.db etcd-server:/root
+    Restore the snapshot on the cluster2. Since we are restoring directly on the etcd-server, we can use the endpoint https:/127.0.0.1
+   
+   --name etcd-server --data-dir=/var/lib/etcd-data --cert-file=/etc/etcd/pki/etcd.pem --key-file=/etc/etcd/pki/etcd-key.pem --trusted-ca-file=/etc/etcd/pki/ca.pem
+   --listen-peer-urls https://10.12.44.9:2379
+   
+   
+    etcdctl snapshot restore /opt/cluster2.db --data-dir=/var/lib/etcd-restore --endpoints=https://10.12.44.9:2379 --cert=/etc/etcd/pki/etcd.pem --key=/etc/etcd/pki/etcd-key.pem  --cacert=/etc/etcd/pki/ca.pem 
+	
+	 Update the systemd service unit file for etcdby running vi /etc/systemd/system/etcd.service and add the new value for data-dir:
+	 
+	 
+etcd-server ~ ➜  vi /etc/systemd/system/etcd.service 
+
+etcd-server ~ ➜  ls /var/lib/etcd-restore/
+member
+
+etcd-server ~ ➜  vi /etc/systemd/system/etcd.service 
+etcd-server ~ ➜  ls -l /var/lib/etcd-restore/
+total 4
+drwx------ 4 root root 4096 Jan 21 05:44 member
+
+etcd-server ~ ➜  chown -R etcd:etcd  /var/lib/etcd-restore/
+
+etcd-server ~ ➜  systemctl daemon-reload 
+
+etcd-server ~ ➜  systemctl daemon-reload 

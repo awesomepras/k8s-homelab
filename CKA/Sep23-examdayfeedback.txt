@@ -1,0 +1,10 @@
+In today's digital era, when a system experiences downtime and the platform possesses information about the number of registered exam takers, it should be a straightforward task to initiate notifications to all those individuals in the examination queue. This proactive approach is far preferable to a reactive one. Consider the anxiety that arises when you encounter an error message, even after meticulously scrutinizing the system's compatibility through testing. The initial thoughts may revolve around issues with the router, internet connectivity, cache, the need for a reboot, browser problems, or even unexpected malware intrusions. Questions arise: Where can one find support? How can they be contacted? Time for the exam is slipping away, and desperation sets in.
+
+The generic template responses provided in the Linux Foundation Forums clearly indicate two important points: firstly, that the forums are exclusively intended for addressing course-related concerns, and secondly, that issues with PSI (Proctoring Solutions Incorporated) are explicitly stated as "not handled by us," leaving you to navigate the situation on your own – best of luck in that labyrinth. There's a conspicuous absence of a human touch, showing a lack of empathy towards the predicament faced by end users. It would be beneficial to have a comprehensive FAQ that explicitly assures candidates that exam-related issues caused by infrastructure problems will result in a rescheduled exam. A brief scan of social media platforms doesn't instill much confidence when it comes to taking the exam due to platform issues, and this poor reflection significantly impacts the organization's image.
+
+In the event of system failure, shouldn't the Linux Foundation take the initiative to reach out and collaborate with affected candidates to reschedule their exams? This current experience stands as one of the most frustrating and disappointing in terms of customer service and the exam-taking process.
+
+https://training.linuxfoundation.org/about/faqs/certification-faq/
+
+
+https://tca.psiexams.com/portal/testdelivery/sb_rpnow_download.jsp
